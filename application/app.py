@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_restful import Api, Resource
 from pymongo import MongoClient
+from datetime import datetime
+
 
 app = Flask(__name__)
 api=Api(app)
@@ -23,10 +25,11 @@ class Test(Resource):
 
         key = postedData["key"]
         value = postedData["value"]
-
+        collection.create_index("date", expireAfterSeconds= 60)
         collection.insert({
             "key" : key,
-            "value" : value
+            "value" : value,
+            "date" : datetime.utcnow()
         })
 
         retJson = {
@@ -44,7 +47,7 @@ class Test(Resource):
         if key:
             d = collection.find_one({"key": key})
             if d:
-                data.append({"key" : d["key"], "value": d["value"]})
+                data.append({"key" : d["key"], "value": d["value"], "date": d["date"]})
 
                 retJson = {
                     "status": 200,
@@ -64,7 +67,7 @@ class Test(Resource):
 
 
         for d in collection.find():
-            data.append({"key" : d["key"], "value": d["value"]})
+            data.append({"key" : d["key"], "value": d["value"], "date": d["date"]})
 
         retJson = {
             "status" : 200,
@@ -75,6 +78,16 @@ class Test(Resource):
 
     def patch(self, key):
         patchData = request.get_json()
+
+        d = collection.find_one({"key": key})
+        if not d:
+            retJson = {
+                "status" : 303,
+                "message" : "Key unavailable!!!!!!!"
+            }
+
+            return jsonify(retJson)
+
 
         value = patchData["value"]
 
