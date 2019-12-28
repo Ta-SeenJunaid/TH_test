@@ -51,9 +51,28 @@ class Test(Resource):
 
         return jsonify(retJson)
 
+    def patch(self, key):
+        patchData = request.get_json()
+
+        value = patchData["value"]
+
+        collection.update({"key" : key
+        },{
+            "$set" : {
+                "value" : value
+            }
+        })
+
+        retJson = {
+            "status" : 200,
+            "message" : "Patch successfull!!!!!"
+        }
+
+        return jsonify(retJson)
 
 
-api.add_resource(Test, '/values')
+
+api.add_resource(Test, '/values', '/values/<string:key>')
 
 
 if __name__=="__main__":
