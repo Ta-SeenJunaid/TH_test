@@ -37,9 +37,31 @@ class Test(Resource):
         return jsonify(retJson)
 
 
-    def get(self):
+    def get(self, key=None):
 
         data =[]
+
+        if key:
+            d = collection.find_one({"key": key})
+            if d:
+                data.append({"key" : d["key"], "value": d["value"]})
+
+                retJson = {
+                    "status": 200,
+                    "result" : data
+                }
+
+                return jsonify(retJson)
+
+            else:
+                retJson = {
+                    "status" : 302,
+                    "message" : "No data available!!!!!!!"
+                }
+
+                return jsonify(retJson)
+
+
 
         for d in collection.find():
             data.append({"key" : d["key"], "value": d["value"]})
