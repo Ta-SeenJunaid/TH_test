@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_restful import Api, Resource
 from pymongo import MongoClient
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 app = Flask(__name__)
@@ -25,11 +25,11 @@ class Test(Resource):
 
         key = postedData["key"]
         value = postedData["value"]
-        collection.create_index("date", expireAfterSeconds= 60)
+        collection.create_index("expiredate", expireAfterSeconds= 0)
         collection.insert({
             "key" : key,
             "value" : value,
-            "date" : datetime.utcnow()
+            "expiredate" : datetime.utcnow() + timedelta(seconds = 300)
         })
 
         retJson = {
@@ -47,7 +47,14 @@ class Test(Resource):
         if key:
             d = collection.find_one({"key": key})
             if d:
-                data.append({"key" : d["key"], "value": d["value"], "date": d["date"]})
+                collection.update({"key" : key
+                },{
+                    "$set" : {
+                        "expiredate" : datetime.utcnow() + timedelta(seconds = 300)
+                    }
+                })
+
+                data.append({"key" : d["key"], "value": d["value"], "expiredate": d["expiredate"]})
 
                 retJson = {
                     "status": 200,
@@ -67,7 +74,7 @@ class Test(Resource):
 
 
         for d in collection.find():
-            data.append({"key" : d["key"], "value": d["value"], "date": d["date"]})
+            data.append({"key" : d["key"], "value": d["value"], "expiredate": d["expiredate"]})
 
         retJson = {
             "status" : 200,
@@ -88,13 +95,13 @@ class Test(Resource):
 
             return jsonify(retJson)
 
-
         value = patchData["value"]
 
         collection.update({"key" : key
         },{
             "$set" : {
-                "value" : value
+                "value" : value,
+                "expiredate" : datetime.utcnow() + timedelta(seconds = 300)
             }
         })
 
