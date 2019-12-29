@@ -54,7 +54,7 @@ class Test(Resource):
                     }
                 })
 
-                data.append({"key" : d["key"], "value": d["value"], "expiredate": d["expiredate"]})
+                data.append({"key" : d["key"], "value": d["value"]})
 
                 retJson = {
                     "status": 200,
@@ -74,7 +74,7 @@ class Test(Resource):
 
 
         for d in collection.find():
-            data.append({"key" : d["key"], "value": d["value"], "expiredate": d["expiredate"]})
+            data.append({"key" : d["key"], "value": d["value"]})
 
         retJson = {
             "status" : 200,
